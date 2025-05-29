@@ -1,0 +1,76 @@
+/* CodeSynapse - AI Agent Learning Hub
+   Retro Computer Science Style with Dark Mode */
+
+:root {
+  /* Dark mode colors */
+  --bg-color-dark: #0a0a0a;
+  --text-color-dark: #ffffff; /* Classic green terminal text */
+  --text-color-secondary-dark: #aaffaa;
+  --heading-color-dark: #00ccff;
+  --accent-color-dark: #ff00ff; /* Magenta accent */
+  --accent-color-dark-rgb: 255, 0, 255;
+  --secondary-bg-dark: #1a1a1a;
+  --terminal-bg-dark: #000000;
+  --terminal-header-dark: #333333;
+  --card-bg-dark: #1a1a1a;
+  --code-bg-dark: #001100;
+  --button-primary-bg-dark: #ff00ff;
+  --button-primary-text-dark: #ffffff;
+  --button-secondary-bg-dark: #1a1a1a;
+  --button-secondary-text-dark: #ff00ff;
+  --button-hover-bg-dark: #cc00cc;
+
+  /* Light mode colors */
+  --bg-color-light: #f5f5f7;
+  --text-color-light: #004400;
+  --text-color-secondary-light: #226622;
+  --heading-color-light: #0055aa;
+  --accent-color-light: #aa00aa;
+  --accent-color-light-rgb: 170, 0, 170;
+  --secondary-bg-light: #e8e8e8;
+  --terminal-bg-light: #ffffff;
+  --terminal-header-light: #e0e0e0;
+  --card-bg-light: #ffffff;
+  --code-bg-light: #f8fff8;
+  --button-primary-bg-light: #aa00aa;
+  --button-primary-text-light: #ffffff;
+  --button-secondary-bg-light: #ffffff;
+  --button-secondary-text-light: #aa00aa;
+  --button-hover-bg-light: #880088;
+
+  /* Default to dark mode */
+  --bg-color: var(--bg-color-dark);
+  --text-color: var(--text-color-dark);
+  --text-color-secondary: var(--text-color-secondary-dark);
+  --heading-color: var(--heading-color-dark);
+  --accent-color: var(--accent-color-dark);
+  --accent-color-rgb: var(--accent-color-dark-rgb);
+  --secondary-bg: var(--secondary-bg-dark);
+  --terminal-bg: var(--terminal-bg-dark);
+  --terminal-header: var(--terminal-header-dark);
+  --card-bg: var(--card-bg-dark);
+  --code-bg: var(--code-bg-dark);
+  --button-primary-bg: var(--button-primary-bg-dark);
+  --button-primary-text: var(--button-primary-text-dark);
+  --button-secondary-bg: var(--button-secondary-bg-dark);
+  --button-secondary-text: var(--button-secondary-text-dark);
+  --button-hover-bg: var(--button-hover-bg-dark);
+
+  /* Common variables */
+  --container-width: 90%;
+  --max-width: 1200px;
+  --border-radius: 6px;
+  --button-border-radius: 4px;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+  --terminal-button-size: 12px;
+  --grid-gap: 1.5rem;
+  --transition-speed: 0.3s;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --box-shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
+  --mono-font: "Share Tech Mono", monospace;
+  --heading-font: "VT323", monospace;
+}

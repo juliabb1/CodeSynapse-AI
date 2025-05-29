@@ -1,0 +1,140 @@
+{
+  "pageTitle": "AI Agents",
+  "pageDescription": "Learn about AI Agents, their components, and how they work.",
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "What are AI Agents?",
+      "content": "AI Agents are smart systems that can understand their surroundings, make decisions, and take actions to reach specific goals. Think of them like digital assistants powered by artificial intelligence. They often combine language models with tools, memory, and planning abilities to perform tasks that would otherwise require human intelligence.",
+      "image": "images/agent_components.png",
+      "imageAlt": "AI Components"
+    },
+    {
+      "id": "components",
+      "title": "Components of AI Agents",
+      "content": "An AI Agent is made up of several core parts that help it function like a human assistant. Each component plays a unique role in enabling the agent to think, remember, and act:",
+      "subsections": [
+        {
+          "title": "🗨️ Large Language Models (LLMs)",
+          "content": "This is the 'brain' of the agent. LLMs understand and generate human-like text, allowing the agent to have conversations, write code, or make decisions based on language."
+        },
+        {
+          "title": "🛠️ Tools and Actions",
+          "content": "These are extra capabilities the agent can use to get things done—like searching the web, doing math, or calling an API. Tools help agents go beyond just answering questions."
+        },
+        {
+          "title": "🧠 Memory",
+          "content": "Memory allows an agent to remember past interactions. This makes conversations more natural and helps the agent stay consistent over time."
+        },
+        {
+          "title": "🗺️ Planning",
+          "content": "Planning helps the agent break big goals into smaller steps. It figures out what to do first, next, and last in order to complete a complex task."
+        }
+      ]
+    },
+    {
+      "id": "types",
+      "title": "Types of AI Agents",
+      "content": "There are different kinds of AI Agents depending on what they do and how they work. Here are the main types:",
+      "subsections": [
+        {
+          "title": "Reactive Agents",
+          "content": "These are basic agents that react instantly to input. They don’t think ahead or remember anything. Like a motion-sensor light, they only respond to what’s happening now.",
+          "image": "images/reactive_agents.png",
+          "imageAlt": "Reactive Agent Diagram"
+        },
+        {
+          "title": "Model-based Agents",
+          "content": "These agents use an internal model of the world to make decisions, going beyond simple reflex actions.",
+          "image": "images/model_based_agent.png",
+          "imageAlt": "Model-Based Agent Diagram"
+        },
+        {
+          "title": "Goal-Oriented Agents",
+          "content": "These agents work toward specific goals. They can plan steps and decide which actions are best to reach the goal, just like a GPS calculates the best route.",
+          "image": "images/goal_based_agents.png",
+          "imageAlt": "Goal-Oriented Agent Diagram"
+        },
+        {
+          "title": "Multi-Agent Systems",
+          "content": "This is a group of agents working together. Each one might have a different job, and they collaborate to complete bigger or more complex tasks.",
+          "image": "images/multi_agent_systems.png",
+          "imageAlt": "Multi-Agent System Diagram"
+        }
+      ]
+    },
+    {
+      "id": "implementation",
+      "title": "Implementing AI Agents",
+      "content": "Building AI Agents involves several key steps and considerations:",
+      "codeExample": {
+        "title": "Basic Agent Implementation with LangChain",
+        "language": "python",
+        "code": "from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent\nfrom langchain.prompts import StringPromptTemplate\nfrom langchain import OpenAI, LLMChain\nfrom typing import List, Union\nimport re\n\n\n# Define tools the agent can use\ntools = [\n    Tool(\n        name=\"Search\",\n        func=lambda x: f\"Search results for: {x}\",\n        description=\"Useful for searching information\"\n    ),\n    Tool(\n        name=\"Calculator\",\n        func=lambda x: eval(x),\n        description=\"Useful for performing calculations\"\n    )\n]\n\n\n# Create prompt template\nclass CustomPromptTemplate(StringPromptTemplate):\n    template: str\n    tools: List[Tool]\n    \n    def format(self, **kwargs) -> str:\n        # Extract intermediate steps\n        intermediate_steps = kwargs.pop(\"intermediate_steps\")\n        \n        # Format thoughts based on actions and observations\n        thoughts = \"\"\n        for action, observation in intermediate_steps:\n            thoughts += f\"\\nAction: {action}\\nObservation: {observation}\"\n        \n        # Add formatted data to kwargs\n        kwargs[\"thoughts\"] = thoughts\n        kwargs[\"tools\"] = \"\\n\".join([f\"{tool.name}: {tool.description}\" \n                               for tool in self.tools])\n        kwargs[\"tool_names\"] = \", \".join([tool.name for tool in self.tools])\n        \n        # Return the formatted template\n        return self.template.format(**kwargs)\n\n\n# Create the prompt template with instructions for the agent\nprompt = CustomPromptTemplate(\n    template=\"\"\"\n    You are an AI assistant. You have access to the following tools:\n    {tools}\n\n    Use the following format:\n    Thought: Think about what to do\n    Action: Tool name (input)\n    Observation: Result of the action\n    ... (repeat as needed)\n    Thought: I know the final answer\n    Final Answer: The final answer to the original question\n\n    Question: {input}{thoughts}\n    Thought:\n    \"\"\",\n    tools=tools,\n    input_variables=[\"input\", \"intermediate_steps\"]\n)\n\n\n# Define output parser to interpret the LLM's response\ndef parse_output(llm_output: str) -> Union[str, dict]:\n    # Check if the output contains a final answer\n    if \"Final Answer:\" in llm_output:\n        return {\"output\": llm_output.split(\"Final Answer:\")[-1].strip()}\n    \n    # Check if the output contains an action to take\n    regex = r\"Action: (\\w+)\\s*\\((.*)\\)\"\n    match = re.search(regex, llm_output, re.DOTALL)\n    if match:\n        action = match.group(1).strip()\n        action_input = match.group(2).strip()\n        return {\"action\": action, \"action_input\": action_input}\n    \n    # Default case: return the raw output\n    return {\"output\": llm_output}\n\n\n# Initialize LLM and agent\nllm = OpenAI(temperature=0)\nllm_chain = LLMChain(llm=llm, prompt=prompt)\nagent = LLMSingleActionAgent(\n    llm_chain=llm_chain,\n    output_parser=parse_output,\n    stop=[\"\\nObservation:\"],\n    allowed_tools=[tool.name for tool in tools]\n)\n\n# Create agent executor\nagent_executor = AgentExecutor.from_agent_and_tools(\n    agent=agent,\n    tools=tools,\n    verbose=True\n)\n\n# Run the agent\nresult = agent_executor.run(\"What is the square root of 144?\")\nprint(result)",
+        "explanation": "This Python example shows a basic AI Agent using LangChain. It defines tools the agent can use (like a calculator), sets up how it should think through problems (thought → action → observation), and then runs the agent to answer a question. The agent reads the question, decides what tool to use, runs the tool, and continues until it finds the final answer."
+      }
+    },
+    {
+      "id": "applications",
+      "title": "Applications of AI Agents",
+      "content": "AI Agents are being used in a wide range of applications across various domains:",
+      "subsections": [
+        {
+          "title": "Customer Service",
+          "content": "Answering customer questions automatically, 24/7, with personalized help."
+        },
+        {
+          "title": "Research and Data Analysis",
+          "content": "Collecting information, analyzing data, and summarizing findings for researchers or analysts."
+        },
+        {
+          "title": "Personal Assistants",
+          "content": "Managing schedules, reminders, and answering questions—similar to Siri or Google Assistant."
+        },
+        {
+          "title": "Software Development",
+          "content": "Helping developers write code, debug errors, and generate documentation or templates."
+        },
+        {
+          "title": "Education",
+          "content": "Tutoring students, answering homework questions, and guiding learners through personalized lessons."
+        }
+      ]
+    },
+    {
+      "id": "challenges",
+      "title": "Challenges and Considerations",
+      "content": "Even though AI Agents are powerful, they have some challenges to keep in mind:",
+      "subsections": [
+        {
+          "title": "Hallucinations and Accuracy",
+          "content": "Sometimes agents make up incorrect facts, which can be misleading or dangerous if not caught."
+        },
+        {
+          "title": "Security and Safety",
+          "content": "If agents can access tools or data, they must be protected from misuse or accidental harm."
+        },
+        {
+          "title": "Ethical Considerations",
+          "content": "AI raises important questions about fairness, responsibility, and the impact on jobs and society."
+        },
+        {
+          "title": "Transparency and Explainability",
+          "content": "It's not always easy to understand why an agent made a specific decision, which can be a problem in sensitive areas like healthcare or finance."
+        }
+      ]
+    }
+  ],
+  "relatedLinks": [
+    {
+      "title": "Design Patterns",
+      "description": "Learn about common patterns used to design effective AI Agents.",
+      "url": "/patterns"
+    },
+    {
+      "title": "Code Examples",
+      "description": "Explore more code examples to deepen your understanding.",
+      "url": "/examples"
+    }
+  ]
+}

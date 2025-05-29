@@ -1,0 +1,315 @@
+@import "./variables.css";
+@import url("https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap");
+
+/* Base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--mono-font);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  transition: background-color var(--transition-speed),
+    color var(--transition-speed);
+  padding-bottom: var(--spacing-lg);
+  background-image: radial-gradient(var(--secondary-bg) 1px, transparent 1px),
+    radial-gradient(var(--secondary-bg) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+}
+
+.container {
+  width: var(--container-width);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--spacing-md);
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+  font-family: var(--heading-font);
+  color: var(--heading-color);
+  margin-bottom: var(--spacing-md);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-top: var(--spacing-lg);
+}
+
+h2 {
+  font-size: 2rem;
+  border-bottom: 2px solid var(--accent-color);
+  padding-bottom: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin-top: var(--spacing-lg);
+}
+
+p {
+  margin-bottom: var(--spacing-md);
+}
+
+.subtitle {
+  color: var(--accent-color);
+  font-size: 1.2rem;
+  margin-bottom: var(--spacing-lg);
+}
+
+.terminal-prefix {
+  color: var(--accent-color);
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+/* Lists */
+ul,
+ol {
+  margin-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+li {
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Buttons */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--button-border-radius);
+  font-family: var(--mono-font);
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  border: none;
+  min-width: 120px;
+  text-align: center;
+  margin: var(--spacing-xs);
+  box-shadow: var(--box-shadow);
+}
+
+.button:hover {
+  box-shadow: var(--box-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.button.primary {
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-text);
+}
+
+.button.primary:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.button.secondary {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border: 1px solid var(--accent-color);
+}
+
+.button.secondary:hover {
+  background-color: rgba(var(--accent-color-rgb), 0.1);
+}
+
+.button.small {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.85rem;
+  min-width: 100px;
+}
+
+.button.fancy {
+  position: relative;
+  overflow: hidden;
+  padding-right: var(--spacing-lg);
+}
+
+.button-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Tag and filter buttons */
+.tag-filter,
+.difficulty-filter,
+.clear-filters {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border: 1px solid var(--accent-color);
+  border-radius: var(--button-border-radius);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin: var(--spacing-xs);
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  font-family: var(--mono-font);
+  font-size: 0.85rem;
+}
+
+.tag-filter:hover,
+.difficulty-filter:hover,
+.clear-filters:hover {
+  background-color: rgba(var(--accent-color-rgb), 0.1);
+  transform: translateY(-1px);
+}
+
+.tag-filter.active,
+.difficulty-filter.active {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+}
+
+/* Dark/Light mode toggle */
+body.light-mode {
+  --bg-color: var(--bg-color-light);
+  --text-color: var(--text-color-light);
+  --text-color-secondary: var(--text-color-secondary-light);
+  --heading-color: var(--heading-color-light);
+  --accent-color: var(--accent-color-light);
+  --accent-color-rgb: var(--accent-color-light-rgb);
+  --secondary-bg: var(--secondary-bg-light);
+  --terminal-bg: var(--terminal-bg-light);
+  --terminal-header: var(--terminal-header-light);
+  --card-bg: var(--card-bg-light);
+  --code-bg: var(--code-bg-dark);
+  --button-primary-bg: var(--button-primary-bg-light);
+  --button-primary-text: var(--button-primary-text-light);
+  --button-secondary-bg: var(--button-secondary-bg-light);
+  --button-secondary-text: var(--button-secondary-text-light);
+  --button-hover-bg: var(--button-hover-bg-light);
+}
+
+/* Grid layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--grid-gap);
+  margin: var(--spacing-md) 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --container-width: 95%;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.7rem;
+  }
+
+  h3 {
+    font-size: 1.3rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .button {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.9rem;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+
+  .button {
+    width: 100%;
+    margin: var(--spacing-xs) 0;
+  }
+}
+
+/* Blinking cursor effect */
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+h1::after,
+h2::after {
+  content: "_";
+  animation: blink 1s infinite;
+  font-weight: normal;
+}
+
+/* Active section indicator */
+.active-section {
+  position: relative;
+}
+
+.active-section::before {
+  content: ">";
+  position: absolute;
+  left: -1.5rem;
+  color: var(--accent-color);
+  animation: blink 1s infinite;
+}
+
+/* Accessibility */
+:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

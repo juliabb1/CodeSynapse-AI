@@ -1,0 +1,175 @@
+{
+  "pageTitle": "AI Agent Design Patterns",
+  "pageDescription": "Explore common design patterns for building effective AI Agents with LangChain and LangGraph.",
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction to AI Agent Design Patterns",
+      "content": "Design patterns in AI Agent development provide reusable solutions to common problems. They help structure agent architectures, improve reliability, and make code more maintainable. This page explores key patterns used in LangChain and LangGraph for building effective AI Agents.",
+      "image": "images/agentic_design_patterns_4.png",
+      "imageAlt": "AI Agent Design Patterns Overview"
+    },
+    {
+      "id": "react-pattern",
+      "title": "ReAct Pattern",
+      "content": "The ReAct (Reasoning + Acting) pattern combines reasoning and action in an iterative process. The agent thinks about what to do, takes an action, observes the result, and repeats until the task is complete.",
+      "codeExample": {
+        "title": "ReAct Pattern Implementation",
+        "language": "python",
+        "code": "from langchain.agents import load_tools\nfrom langchain.agents import initialize_agent\nfrom langchain.agents import AgentType\nfrom langchain.llms import OpenAI\n\n# Initialize the language model\nllm = OpenAI(temperature=0)\n\n# Load tools that the agent can use\ntools = load_tools([\"serpapi\", \"llm-math\"], llm=llm)\n\n# Initialize the ReAct agent\nagent = initialize_agent(\n    tools, \n    llm, \n    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,\n    verbose=True\n)\n\n# Run the agent on a task\nresult = agent.run(\n    \"What was the high temperature in SF yesterday in Fahrenheit? \"\n    \"What would that be in Celsius?\"\n)\n\nprint(result)",
+        "explanation": "This example demonstrates the ReAct pattern using LangChain. The agent is initialized with the ZERO_SHOT_REACT_DESCRIPTION type, which implements the ReAct pattern. When given a task, the agent will reason about what to do, choose a tool to use, observe the result, and continue this process until it reaches a final answer."
+      },
+      "subsections": [
+        {
+          "title": "Key Components",
+          "content": "The ReAct pattern consists of three main components: Reasoning (thinking about what to do), Acting (using tools or taking actions), and Observation (processing the results of actions)."
+        },
+        {
+          "title": "When to Use",
+          "content": "Use the ReAct pattern when your agent needs to solve complex tasks that require multiple steps, external tools, or information gathering. It's particularly effective for tasks that benefit from step-by-step reasoning."
+        },
+        {
+          "title": "Advantages",
+          "content": "ReAct provides transparency into the agent's thought process, reduces hallucinations by grounding reasoning in observations, and enables complex multi-step problem-solving."
+        }
+      ]
+    },
+    {
+      "id": "chain-of-thought",
+      "title": "Chain of Thought",
+      "content": "Chain of Thought (CoT) is a prompting technique that encourages the language model to break down complex reasoning tasks into intermediate steps. By showing the model how to think through a problem step by step, it can produce more accurate and reliable results.",
+      "codeExample": {
+        "title": "Chain of Thought Implementation",
+        "language": "python",
+        "code": "from langchain.prompts import PromptTemplate\nfrom langchain.llms import OpenAI\nfrom langchain.chains import LLMChain\n\n# Define a prompt template with chain of thought reasoning\ncot_template = \"\"\"\n    Question: {question}\n\n    Let's think through this step by step:\n    1. First, I need to understand what the question is asking.\n    2. Then, I'll identify the key information needed to solve it.\n    3. Next, I'll work through the solution methodically.\n    4. Finally, I'll provide the answer.\n\n    Reasoning:\n\"\"\"\n\n# Create the prompt template\nprompt = PromptTemplate(\n    template=cot_template,\n    input_variables=[\"question\"]\n)\n\n# Initialize the language model\nllm = OpenAI(temperature=0)\n\n# Create the chain\nchain = LLMChain(llm=llm, prompt=prompt)\n\n# Run the chain\nresult = chain.run(\n    question=\"If I have 5 apples and I give 2 to my friend, then buy 3 more, how many apples do I have?\"\n)\nprint(result)",
+        "explanation": "This example shows how to implement Chain of Thought reasoning using LangChain. The prompt template explicitly guides the model to break down its thinking into steps. This approach helps the model work through complex problems more effectively by encouraging a structured reasoning process."
+      },
+      "subsections": [
+        {
+          "title": "Key Components",
+          "content": "Chain of Thought consists of a prompt structure that encourages step-by-step reasoning and a language model capable of following this reasoning pattern."
+        },
+        {
+          "title": "When to Use",
+          "content": "Use Chain of Thought when dealing with complex reasoning tasks, mathematical problems, logical puzzles, or any situation where breaking down the thinking process improves accuracy."
+        },
+        {
+          "title": "Advantages",
+          "content": "Chain of Thought improves reasoning accuracy, makes the model's thinking process transparent, and helps avoid logical errors in complex tasks."
+        }
+      ]
+    },
+    {
+      "id": "agent-with-memory",
+      "title": "Agent with Memory",
+      "content": "The Agent with Memory pattern extends basic agents by adding memory capabilities. This allows agents to remember previous interactions, maintain context across multiple turns, and build on past experiences.",
+      "codeExample": {
+        "title": "Agent with Memory Implementation",
+        "language": "python",
+        "code": "from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent\nfrom langchain.memory import ConversationBufferMemory\nfrom langchain.prompts import StringPromptTemplate\nfrom langchain.chains import LLMChain\nfrom langchain.llms import OpenAI\nimport re\n\n# Define tools\ntools = [\n    Tool(\n        name=\"Search\",\n        func=lambda x: f\"Search results for: {x}\",\n        description=\"Useful for searching information\"\n    )\n]\n\n# Define prompt template with memory\ntemplate = \"\"\"\n    You are an assistant with memory.\n\n    Previous conversation:\n    {chat_history}\n\n    Current question: {input}\n    {agent_scratchpad}\n\"\"\"\n\nclass CustomPromptTemplate(StringPromptTemplate):\n    template: str\n    tools: list\n    \n    def format(self, **kwargs):\n        kwargs[\"agent_scratchpad\"] = \"\"\n        return self.template.format(**kwargs)\n\n# Create the prompt template\nprompt = CustomPromptTemplate(\n    template=template,\n    tools=tools,\n    input_variables=[\"input\", \"chat_history\", \"agent_scratchpad\"]\n)\n\n# Initialize memory\nmemory = ConversationBufferMemory(memory_key=\"chat_history\")\n\n# Initialize LLM and chain\nllm = OpenAI(temperature=0)\nllm_chain = LLMChain(llm=llm, prompt=prompt)\n\n# Initialize agent\nagent = LLMSingleActionAgent(\n    llm_chain=llm_chain,\n    output_parser=lambda x: {\"output\": x},\n    stop=[\"\\nObservation:\"],\n    allowed_tools=[tool.name for tool in tools]\n)\n\n# Create agent executor with memory\nagent_executor = AgentExecutor.from_agent_and_tools(\n    agent=agent,\n    tools=tools,\n    memory=memory,\n    verbose=True\n)\n\n# Run the agent\nresult1 = agent_executor.run(\"My name is Alice.\")\nresult2 = agent_executor.run(\"What's my name?\")\nprint(result2)",
+        "explanation": "This example demonstrates an agent with memory using LangChain. The agent uses ConversationBufferMemory to store previous interactions. When the user introduces themselves as 'Alice' and then asks 'What's my name?', the agent can recall the information from its memory and respond correctly."
+      },
+      "subsections": [
+        {
+          "title": "Key Components",
+          "content": "The Agent with Memory pattern includes a memory system (like ConversationBufferMemory), a prompt template that incorporates memory context, and an agent executor that manages the memory state."
+        },
+        {
+          "title": "When to Use",
+          "content": "Use this pattern when your agent needs to maintain context across multiple interactions, remember user preferences or information, or build on previous conversations."
+        },
+        {
+          "title": "Types of Memory",
+          "content": "Different memory types include: Buffer Memory (stores all interactions), Summary Memory (maintains a summary of the conversation), Entity Memory (tracks specific entities mentioned), and Vector Memory (stores embeddings for semantic retrieval)."
+        }
+      ]
+    },
+    {
+      "id": "langgraph-state-machine",
+      "title": "LangGraph State Machine",
+      "content": "LangGraph extends LangChain by providing a framework for building stateful, multi-step applications using a graph-based approach. The State Machine pattern allows you to define explicit states and transitions for your agent, making complex workflows more manageable.",
+      "codeExample": {
+        "title": "LangGraph State Machine Implementation",
+        "language": "python",
+        "code": "from langchain.chat_models import ChatOpenAI\nfrom langchain.prompts import ChatPromptTemplate\nfrom langgraph.graph import StateGraph, END\nfrom typing import TypedDict, Annotated, Literal\n\n# Define the state schema\nclass AgentState(TypedDict):\n    question: str\n    intermediate_steps: list\n    answer: str\n\n# Define nodes (functions for each state)\ndef analyze_question(state):\n    question = state[\"question\"]\n    llm = ChatOpenAI(temperature=0)\n    prompt = ChatPromptTemplate.from_template(\n        \"Analyze this question: {question}. What information do we need to answer it?\"\n    )\n    response = llm.invoke(prompt.format(question=question))\n    return {\"intermediate_steps\": state[\"intermediate_steps\"] + [response.content]}\n\n\ndef research(state):\n    question = state[\"question\"]\n    analysis = state[\"intermediate_steps\"][-1]\n    llm = ChatOpenAI(temperature=0)\n    prompt = ChatPromptTemplate.from_template(\n        \"Based on this analysis: {analysis}, research the question: {question}. What are the key facts?\"\n    )\n    response = llm.invoke(prompt.format(question=question, analysis=analysis))\n    return {\"intermediate_steps\": state[\"intermediate_steps\"] + [response.content]}\n\n\ndef formulate_answer(state):\n    question = state[\"question\"]\n    research = state[\"intermediate_steps\"][-1]\n    llm = ChatOpenAI(temperature=0)\n    prompt = ChatPromptTemplate.from_template(\n        \"Using this research: {research}, answer the question: {question}\"\n    )\n    response = llm.invoke(prompt.format(question=question, research=research))\n    return {\"answer\": response.content}\n\n\n# Define the state machine\nworkflow = StateGraph(AgentState)\n\n# Add nodes\nworkflow.add_node(\"analyze\", analyze_question)\nworkflow.add_node(\"research\", research)\nworkflow.add_node(\"answer\", formulate_answer)\n\n# Add edges\nworkflow.add_edge(\"analyze\", \"research\")\nworkflow.add_edge(\"research\", \"answer\")\nworkflow.add_edge(\"answer\", END)\n\n# Set the entry point\nworkflow.set_entry_point(\"analyze\")\n\n# Compile the graph\nagent_executor = workflow.compile()\n\n# Run the agent\nresult = agent_executor.invoke({\n    \"question\": \"What is the capital of France?\", \n    \"intermediate_steps\": [], \n    \"answer\": \"\"\n})\nprint(result[\"answer\"])",
+        "explanation": "This example demonstrates a LangGraph state machine for a question-answering agent. The agent has three states: analyze (understanding the question), research (gathering information), and answer (formulating the final response). The workflow defines explicit transitions between these states, creating a clear and manageable process flow."
+      },
+      "subsections": [
+        {
+          "title": "Key Components",
+          "content": "The LangGraph State Machine pattern includes states (nodes in the graph), transitions (edges between nodes), a state schema (defining the data structure), and conditional logic for determining transitions."
+        },
+        {
+          "title": "When to Use",
+          "content": "Use this pattern for complex workflows with distinct processing stages, when you need explicit control over the agent's decision-making process, or when building agents that require sophisticated error handling and recovery mechanisms."
+        },
+        {
+          "title": "Advantages",
+          "content": "LangGraph State Machines provide explicit control flow, improved debugging capabilities, better error handling, and the ability to create complex, multi-stage processing pipelines."
+        }
+      ]
+    },
+    {
+      "id": "tool-augmented-agent",
+      "title": "Tool-Augmented Agent",
+      "content": "The Tool-Augmented Agent pattern extends an agent's capabilities by giving it access to external tools and APIs. This allows the agent to perform actions beyond what the language model can do on its own, such as searching the web, performing calculations, or accessing databases.",
+      "codeExample": {
+        "title": "Tool-Augmented Agent Implementation",
+        "language": "python",
+        "code": "from langchain.agents import load_tools, initialize_agent, AgentType\nfrom langchain.llms import OpenAI\n\n# Initialize the language model\nllm = OpenAI(temperature=0)\n\n# Load a variety of tools\ntools = load_tools([\n    \"serpapi\",           # Search engine\n    \"llm-math\",          # Mathematical calculations\n    \"wikipedia\",         # Wikipedia access\n    \"terminal\",          # Terminal commands\n    \"python_repl\"        # Python interpreter\n], llm=llm)\n\n# Initialize the agent with tools\nagent = initialize_agent(\n    tools,\n    llm,\n    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,\n    verbose=True\n)\n\n# Run the agent on a complex task that requires multiple tools\nresult = agent.run(\"\"\"\n    I need to solve this math problem: 37 * 42, \n    then find the capital of the country whose population is closest to that number in millions, \n    and finally get a brief summary of that city from Wikipedia.\n\"\"\")\n\nprint(result)",
+        "explanation": "This example shows a tool-augmented agent that can use multiple tools to solve a complex task. The agent has access to a search engine, a calculator, Wikipedia, a terminal, and a Python interpreter. When given a multi-step task, it can determine which tools to use at each step and combine the results to produce a comprehensive answer."
+      },
+      "subsections": [
+        {
+          "title": "Key Components",
+          "content": "The Tool-Augmented Agent pattern includes a set of tools (functions or APIs), a tool selection mechanism (how the agent decides which tool to use), and a result processing system (how the agent interprets and uses tool outputs)."
+        },
+        {
+          "title": "When to Use",
+          "content": "Use this pattern when your agent needs capabilities beyond text generation, such as retrieving real-time information, performing calculations, executing code, or interacting with external systems."
+        },
+        {
+          "title": "Common Tools",
+          "content": "Popular tools include search engines, calculators, code interpreters, database connectors, API clients, file systems, and specialized domain-specific tools."
+        }
+      ]
+    },
+    {
+      "id": "multi-agent-system",
+      "title": "Multi-Agent System",
+      "content": "The Multi-Agent System pattern involves multiple specialized agents working together to solve complex problems. Each agent has a specific role or expertise, and they collaborate through a coordination mechanism to achieve a common goal.",
+      "codeExample": {
+        "title": "Multi-Agent System Implementation",
+        "language": "python",
+        "code": "from langchain.chat_models import ChatOpenAI\nfrom langchain.prompts import ChatPromptTemplate\nfrom langchain.schema import SystemMessage, HumanMessage\n\n# Initialize the language model\nllm = ChatOpenAI(temperature=0.7)\n\n# Define specialized agents\ndef researcher_agent(topic):\n    system_message = SystemMessage(\n        content=\"You are a research specialist. Your job is to gather key information about a topic.\"\n    )\n    human_message = HumanMessage(\n        content=f\"Research this topic and provide key facts: {topic}\"\n    )\n    response = llm.invoke([system_message, human_message])\n    return response.content\n\n\ndef critic_agent(research):\n    system_message = SystemMessage(\n        content=\"You are a critical thinker. Your job is to evaluate information for accuracy and identify potential biases or gaps.\"\n    )\n    human_message = HumanMessage(\n        content=f\"Evaluate this research critically:\\n{research}\"\n    )\n    response = llm.invoke([system_message, human_message])\n    return response.content\n\n\ndef writer_agent(research, critique):\n    system_message = SystemMessage(\n        content=\"You are a skilled writer. Your job is to synthesize information into a clear, concise, and engaging article.\"\n    )\n    human_message = HumanMessage(\n        content=f\"Write an article based on this research:\\n{research}\\n\\nTaking into account this critique:\\n{critique}\"\n    )\n    response = llm.invoke([system_message, human_message])\n    return response.content\n\n\n# Coordinator function\ndef multi_agent_workflow(topic):\n    # Step 1: Research\n    research_results = researcher_agent(topic)\n    print(f\"Research completed on: {topic}\")\n    \n    # Step 2: Critique\n    critique = critic_agent(research_results)\n    print(\"Research evaluated\")\n    \n    # Step 3: Write\n    article = writer_agent(research_results, critique)\n    print(\"Article written\")\n    \n    return article\n\n\n# Run the multi-agent system\nfinal_result = multi_agent_workflow(\"The impact of artificial intelligence on healthcare\")\nprint(\"\\nFINAL RESULT:\\n\")\nprint(final_result)",
+        "explanation": "This example demonstrates a multi-agent system with three specialized agents: a researcher who gathers information, a critic who evaluates the research, and a writer who produces the final output. The agents work sequentially, with each agent building on the work of the previous one. A coordinator function manages the workflow and communication between agents."
+      },
+      "subsections": [
+        {
+          "title": "Key Components",
+          "content": "The Multi-Agent System pattern includes specialized agents (each with a specific role), a coordination mechanism (how agents communicate and collaborate), and a workflow (the sequence of agent interactions)."
+        },
+        {
+          "title": "When to Use",
+          "content": "Use this pattern for complex tasks that benefit from different perspectives or expertise, when you want to implement checks and balances in the system, or when breaking down a task into specialized roles improves overall performance."
+        },
+        {
+          "title": "Advantages",
+          "content": "Multi-Agent Systems enable division of labor, provide multiple perspectives on a problem, implement checks and balances through agent critique, and can handle more complex tasks than single agents."
+        }
+      ]
+    }
+  ],
+  "relatedLinks": [
+    {
+      "title": "AI Agents",
+      "description": "Learn about AI Agents, their components, and how they work.",
+      "url": "/agents"
+    },
+    {
+      "title": "Code Examples",
+      "description": "See more code examples of AI Agents in action.",
+      "url": "/examples"
+    }
+  ]
+}
